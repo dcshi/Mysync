@@ -186,8 +186,15 @@ int load_binlog_info(mysync_info_t *mi,
 		return -1;
 	}
 
+	if (*binlog_name) {
+		ms_pfree(mi->pool, *binlog_name);
+	}
+
 	*binlog_name = ms_strdup(mi->pool, name);
 	*binlog_pos  = ms_atou(pos, ms_strlen(pos));
+
+	ms_free(name);
+	ms_free(pos);
 
 	ms_debug("loading binlog info...,");
 	ms_debug("binlog name %s, binlog pos %u", *binlog_name, *binlog_pos);
@@ -295,16 +302,5 @@ conv_2_json(mysync_info_t *mi, ms_table_info_t *ti, ms_str_t *meta)
 	}
 	*--p = '}'; *++p = '}'; *p = '\0';
 	
-	/* deinit the cols data */
-	for (i = 0; i < ti->cols->nelts; i++) {
-		ci = ms_array_get(ti->cols, i);
-		ci->is_null = 1;
-
-		if (!ms_str_null(&ci->data)) {
-			ms_str_deinit(mi->pool, &ci->data);
-		}
-
-	}
-
 	return s;
 }

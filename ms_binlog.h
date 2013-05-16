@@ -8,6 +8,7 @@
 typedef struct comm_header_s 		comm_header_t;
 typedef struct rotate_event_s 		rotate_event_t;
 typedef struct table_map_event_s 	table_map_event_t;
+typedef struct rows_event_s  		rows_event_t;
 typedef struct write_rows_event_s  	write_rows_event_t;
 typedef struct update_rows_event_s 	update_rows_event_t;
 typedef struct delete_rows_event_s  delete_rows_event_t;
@@ -35,29 +36,36 @@ struct table_map_event_s {
 	ms_str_t	metadata;
 };
 
+struct rows_event_s {
+	uint64_t	table_id;
+	uint16_t	flags;
+	uint16_t	ncols;
+	ms_str_t	data;
+};
+
 struct write_rows_event_s {
 	uint64_t	table_id;
 	uint16_t	flags;
 	uint16_t	ncols;
-	uint64_t	cols_mask;  /* test nbit == ncols */
 	ms_str_t	data;
+	uint64_t	cols_mask;  /* test nbit == ncols */
 };
 
 struct update_rows_event_s {
 	uint64_t	table_id;
 	uint16_t	flags;
 	uint16_t	ncols;
+	ms_str_t	data;
 	uint64_t	pre_cols_mask;	/* pre update */
 	uint64_t 	post_cols_mask; /* post update */
-	ms_str_t	data;
 };
 
 struct delete_rows_event_s {
 	uint64_t	table_id;
 	uint16_t	flags;
 	uint16_t	ncols;
-	uint64_t	cols_mask;  /* test nbit == ncols */
 	ms_str_t	data;
+	uint64_t	cols_mask;  /* test nbit == ncols */
 };
 
 void comm_header_parse(comm_header_t *h, ms_str_t *buf);
@@ -73,10 +81,17 @@ void update_rows_event_parse(update_rows_event_t *e, ms_str_t *buf);
 
 void delete_rows_event_parse(delete_rows_event_t *e, ms_str_t *buf);
 
-ms_table_info_t *
+void
 table_map_event_handler(mysync_info_t *mi, table_map_event_t *e);
 
-ms_table_info_t *
+void
 write_rows_event_handler(mysync_info_t *mi,	write_rows_event_t *e);
+
+void
+update_rows_event_handler(mysync_info_t *mi, update_rows_event_t *e);
+
+void
+delete_rows_event_handler(mysync_info_t *mi, delete_rows_event_t *e);
+
 
 #endif

@@ -2,7 +2,6 @@
 #include "ms_event.h"
 #include "ms_binlog.h"
 #include "ms_net.h"
-#include "ms_qs.h"
 #include "ms_type.h"
 
 bool event_supported(uint32_t event_type)
@@ -66,35 +65,32 @@ int event_dispatch(mysync_info_t *mi,
 		}
 		case  WRITE_ROWS_EVENT:
 		{
-			ms_str_t jstr, meta;
-			ms_table_info_t *ti;
 			write_rows_event_t e;
 
 			write_rows_event_parse(&e, buf);
 
-			ti = write_rows_event_handler(mi, &e);
-			if (ti == NULL) break;
-
-			/* serialization the row-data to json-string */
-			meta.data = (uint8_t*)"insert";
-			meta.len  = sizeof("insert") - 1;
-			jstr = conv_2_json(mi, ti, &meta);
-			if (ms_str_null(&jstr)) break;
-
-			/* flush row-data to qs */
-			flush_row_info(mi, &ti->dt, &jstr);
-
-			ms_debug("json-str len %d, %s", jstr.len, jstr.data);
-			ms_pfree(mi->pool, jstr.data);
+			write_rows_event_handler(mi, &e);
 
 			break;
 		}
 		case UPDATE_ROWS_EVENT:
 		{
+			update_rows_event_t e;
+
+			update_rows_event_parse(&e, buf);
+
+			update_rows_event_handler(mi, &e);
+
 			break;
 		}
 		case DELETE_ROWS_EVENT:
 		{
+			delete_rows_event_t e;
+
+			delete_rows_event_parse(&e, buf);
+
+			delete_rows_event_handler(mi, &e);
+
 			break;
 		}
 		default:

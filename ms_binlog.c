@@ -5,6 +5,7 @@
 #include "ms_binlog.h"
 #include "ms_event.h"
 #include "ms_net.h"
+#include "ms_qs.h"
 
 
 uint64_t build_cols_mask(uint8_t **p, uint32_t *s, uint32_t n)
@@ -15,39 +16,25 @@ uint64_t build_cols_mask(uint8_t **p, uint32_t *s, uint32_t n)
 	switch( l ) 
 	{   
 		case 1:
-		{   
 			cols_mask = 0xFFFFFFFFFFFFFFFFLL & (uint64_t)*(*p);
 			break;
-		}   
 		case 2:
-		{   
 			cols_mask = 0xFFFFFFFFFFFFFFFFLL & (uint64_t)uint2korr(*p);
 			break;
-		}   
 		case 3:
-		{   
 			cols_mask = 0xFFFFFFFFFFFFFFFFLL & (uint64_t)uint3korr(*p);
 			break;
-		}   
 		case 4:
-		{   
 			cols_mask = 0xFFFFFFFFFFFFFFFFLL & (uint64_t)uint4korr(*p);
 			break;
-		}   
 		case 5:
-		{   
 			cols_mask = 0xFFFFFFFFFFFFFFFFLL & (uint64_t)uint5korr(*p);
 			break;
-		}   
 		case 6:
-		{   
 			cols_mask = 0xFFFFFFFFFFFFFFFFLL & (uint64_t)uint6korr(*p);
 			break;
-		}
 		default:
-		{
 			return (uint64_t) - 1;
-		}                          
 	}
 
 	if (p && *p) (*p) += l;
@@ -311,8 +298,7 @@ bool table_map_event_verify(table_map_event_t *e)
 			!ms_str_null(&e->cols));
 }
 
-ms_table_info_t *
-table_map_event_handler(mysync_info_t *mi, table_map_event_t *e)
+void table_map_event_handler(mysync_info_t *mi, table_map_event_t *e)
 {
 	uint32_t i;
 	uint8_t* type;
@@ -323,7 +309,7 @@ table_map_event_handler(mysync_info_t *mi, table_map_event_t *e)
 	/* find table_info from hash table */
 	i = ms_snprintf(dt, 256, "%s.%s", e->db_name.data, e->table_name.data);
 	ti = ms_hash_find(mi->ti_hash, ms_hash_key_lc(dt, i), dt, i);
-	if (ti == NULL) return NULL;
+	if (ti == NULL) return;
 
 	/*
 	 * the struct of this table has been modified
@@ -340,7 +326,7 @@ table_map_event_handler(mysync_info_t *mi, table_map_event_t *e)
 		ti->cols = ms_array_create(mi->pool, 
 				e->cols.len, sizeof(ms_col_info_t));
 
-		if (sync_one_table_info(mi, ti)) return NULL;
+		if (sync_one_table_info(mi, ti)) return;
 	}
 
 	/* 
@@ -353,7 +339,7 @@ table_map_event_handler(mysync_info_t *mi, table_map_event_t *e)
 		ti->meta.data = ms_palloc(mi->pool, e->metadata.len);
 		if (ti->meta.data == NULL) {
 			ms_error("ms_palloc failed, memory pool may be full");
-			return NULL;
+			return;
 		}
 	}
 
@@ -378,8 +364,6 @@ table_map_event_handler(mysync_info_t *mi, table_map_event_t *e)
 	if (*oti != ti) {
 		*oti = ti;
 	}
-
-	return ti;
 }
 
 void write_rows_event_parse(write_rows_event_t *e, ms_str_t *buf)
@@ -410,6 +394,8 @@ void update_rows_event_parse(update_rows_event_t *e, ms_str_t *buf)
 	e->flags = (uint16_t)uint2korr(data);
 	data = data + 2;
 
+	e->ncols = net_field_length(&data);
+
 	e->pre_cols_mask = build_cols_mask(&data, NULL, e->ncols);
 	e->post_cols_mask = build_cols_mask(&data, NULL, e->ncols);
 
@@ -423,35 +409,42 @@ void delete_rows_event_parse(delete_rows_event_t *e, ms_str_t *buf)
 	write_rows_event_parse((write_rows_event_t *)e, buf);
 }
 
-ms_table_info_t *
-write_rows_event_handler(mysync_info_t *mi, write_rows_event_t *e)
+void
+rows_event_handler(mysync_info_t *mi, void *event, int flag, ms_str_t *jmeta)
 {
-	uint32_t i, len, mt;
+	uint32_t i, j, len, mt;
 	uint32_t ftype, fsize;
 	uint8_t *data, *pmeta;
    	uint64_t used_cols_mask, bit;
+	ms_str_t jstr;
 	ms_col_info_t *ci;
 	ms_table_info_t *ti;
+	rows_event_t *e;
 
-	/* find table_info from ti_map, based table_id*/
-	i = e->table_id % mi->ti_map_prime;
-	ti = *(ms_table_info_t**)ms_array_get2(mi->ti_map, i);
-	if (ti == NULL) return NULL;
+	e = (rows_event_t*)event;
+	
+	ti = ms_table_info_map_get(mi, e->table_id);
+	if (ti == NULL) return;
 
 	data = e->data.data;
 	len  = e->data.len;
-	pmeta = ti->meta.data;
 
-	while (len > 0) {
+	for (j = 1; len > 0; j++) 
+	{
 		/* 0 for used, 1 for null */
 		used_cols_mask = ~build_cols_mask(&data, &len, e->ncols);	
+		pmeta = ti->meta.data;
 
-		bit = 0x01;
-		for (i = 0; i < e->ncols; i++) {
+		for (i = 0, bit = 0x01; i < e->ncols; i++, bit <<= 1) {
 
 			ci = ms_array_get(ti->cols, i);
-			ftype = ci->type;
+			ci->is_null = 1;
 
+			if (!ms_str_null(&ci->data)) {
+				ms_str_deinit(mi->pool, &ci->data);
+			}
+
+			ftype = ci->type;
 			switch (calc_metadata_size((ms_coltype_e)ftype)) {
 				case 0:
 				{
@@ -474,22 +467,65 @@ write_rows_event_handler(mysync_info_t *mi, write_rows_event_t *e)
 			}
 
 			/* field is not null */
-			if (used_cols_mask & bit) {
-				fsize = calc_field_size((ms_coltype_e)ftype, data, mt); 
+			if (!(used_cols_mask & bit)) {
+				continue;
+			}
 
+			fsize = calc_field_size((ms_coltype_e)ftype, data, mt); 
+
+			if (j & flag) {
 				cols_pre_tune(ci, data, fsize, mt);
 				cols_tune(mi, ci);
-
-				data += fsize;
-				len  -= fsize;
-			} 
-			else {
-				ci->is_null = 1;
+				ci->type = ftype;
 			}
-			
-			bit <<= 1;
-		}
-	}
 
-	return ti;
+			data += fsize;
+			len  -= fsize;
+		}
+
+		if (!(j & flag)) continue;
+
+		/* serialization the row-data to json-string */
+		jstr = conv_2_json(mi, ti, jmeta);
+		if (ms_str_null(&jstr)) break;
+
+		/* flush row-data to qs */
+		flush_row_info(mi, &ti->dt, &jstr);
+
+		ms_debug("json-str len %d, %s", jstr.len, jstr.data);
+		ms_pfree(mi->pool, jstr.data);
+	}
+}
+
+void 
+write_rows_event_handler(mysync_info_t *mi, write_rows_event_t *e)
+{
+	ms_str_t jmeta;
+
+	jmeta.data = (uint8_t*)"insert";
+	jmeta.len  = sizeof("insert") - 1;
+
+	rows_event_handler(mi, e, 0x03, &jmeta);	
+}
+
+void
+update_rows_event_handler(mysync_info_t *mi, update_rows_event_t *e)
+{
+	ms_str_t jmeta;
+
+	jmeta.data = (uint8_t*)"update";
+	jmeta.len  = sizeof("update") - 1;
+
+	rows_event_handler(mi, e, 0x02, &jmeta);	
+}
+
+void
+delete_rows_event_handler(mysync_info_t *mi, delete_rows_event_t *e)
+{
+	ms_str_t jmeta;
+
+	jmeta.data = (uint8_t*)"delete";
+	jmeta.len  = sizeof("delete") - 1;
+
+	rows_event_handler(mi, e, 0x03, &jmeta);	
 }

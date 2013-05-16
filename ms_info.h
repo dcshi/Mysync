@@ -83,5 +83,8 @@ void mysync_info_deinit(mysync_info_t *mi);
 void ms_col_info_deinit(mysync_info_t *mi, ms_col_info_t *ci);
 void ms_table_info_deinit(mysync_info_t *mi, ms_table_info_t *ti);
 
+	ms_table_info_t *
+ms_table_info_map_get(mysync_info_t *mi, uint32_t table_id);
+
 #endif 
 

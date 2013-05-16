@@ -73,6 +73,19 @@ ms_hash_t * ti_hash_init(mysync_info_t *mi)
 	return hinit.hash;
 }
 
+ms_table_info_t *
+ms_table_info_map_get(mysync_info_t *mi, uint32_t table_id) 
+{
+	uint32_t i;
+	ms_table_info_t *ti;
+
+	/* find table_info from ti_map, based table_id*/
+	i  = table_id % mi->ti_map_prime;
+	ti = *(ms_table_info_t**)ms_array_get2(mi->ti_map, i);
+
+	return ti;
+}
+
 int mysync_info_verify(mysync_info_t *info)
 {
     mysync_info_t *mi = info;
@@ -118,11 +131,11 @@ void ms_col_info_deinit(mysync_info_t *mi, ms_col_info_t *ci)
 	ms_str_t *s;
 
 	if (!ms_str_null(&ci->name)) {
-		ms_pfree(mi->pool, ci->name.data);
+		ms_str_deinit(mi->pool, &ci->name);
 	}
 
 	if (!ms_str_null(&ci->data)) {
-		ms_pfree(mi->pool, ci->data.data);
+		ms_str_deinit(mi->pool, &ci->data);
 	}
 
 	if (ci->meta) {
@@ -143,11 +156,11 @@ void ms_table_info_deinit(mysync_info_t *mi, ms_table_info_t *ti)
 	ms_col_info_t *ci;
 
 	if (!ms_str_null(&ti->dt)) {
-		ms_pfree(mi->pool, ti->dt.data);
+		ms_str_deinit(mi->pool, &ti->dt);
 	}
 
 	if (!ms_str_null(&ti->meta)) {
-		ms_pfree(mi->pool, ti->meta.data);
+		ms_str_deinit(mi->pool, &ti->meta);
 	}
 
 	if (ti->cols) {

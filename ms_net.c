@@ -10,6 +10,7 @@ bool  is_connected;
 
 int connect_to_master(mysync_info_t *mi)
 {
+	uint32_t timeout;
 	is_connected = false;
 
 	if (!mysql_init(&_mysql))
@@ -17,6 +18,11 @@ int connect_to_master(mysync_info_t *mi)
 		ms_error("mysql_init fail");
 		return -1;
 	}
+
+	timeout = 600;
+	mysql_options(&_mysql, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
+	mysql_options(&_mysql, MYSQL_OPT_READ_TIMEOUT, &timeout);
+	mysql_options(&_mysql, MYSQL_OPT_WRITE_TIMEOUT, &timeout);
 
 	if (mysql_real_connect(&_mysql, 
 				mi->master_host, mi->master_user,
@@ -362,5 +368,3 @@ int master_save_read(ms_str_t *buf)
 
 	return 0;
 }
-
-

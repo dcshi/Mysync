@@ -23,6 +23,7 @@ DROP TABLE IF EXISTS `t_mysync`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `t_mysync` (
+  `tid` int(11) NOT NULL AUTO_INCREMENT,
   `tdatetime` datetime DEFAULT NULL,
   `tdate` date DEFAULT NULL,
   `ttime` time DEFAULT NULL,
@@ -35,8 +36,10 @@ CREATE TABLE `t_mysync` (
   `tchar` char(32) DEFAULT NULL,
   `tvarchar` varchar(64) DEFAULT NULL,
   `tblob` blob,
-  `tbit` bit(1) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `tbit` bit(1) DEFAULT NULL,
+  PRIMARY KEY (`tid`),
+  UNIQUE KEY `tid` (`tid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <getopt.h>
-
 #include "ms_core.h"
 #include "ms_info.h"
 #include "ms_net.h"
@@ -21,7 +20,7 @@ void run_prepare()
 
     if (sync_master_version()) {
 		exit(-1);
-    }
+	}
 
     if (sync_master_binfmt()) {
 		exit(-1);
@@ -46,6 +45,11 @@ void run_loop()
 	{
 		/* do main logic */
 		event_handler(&ms_info);
+
+		/*
+		 * ms_slab_stat_t stat;
+		 * ms_slab_stat(ms_info.pool, &stat);
+		 */
 
 		if (ms_reload) 
 		{
@@ -100,8 +104,6 @@ void parse_options(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-    //mysync_info_init(&ms_info);
-
 	signal_init();
 
     parse_options(argc, argv);
@@ -112,7 +114,6 @@ int main(int argc, char **argv)
 
 	if (ms_info.daemonize) {
 		ms_daemon();
-		printf("mysync pid is %d\n", ms_pid);
 	}
 
 	/* log_init */
