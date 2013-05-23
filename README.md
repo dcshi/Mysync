@@ -4,7 +4,7 @@ Mysync is still in development. It may be treated as a toy now.
 
 Description
 ===========
-Mysync is the role of a slaveDB. It recive the binlog from the master, and save them with json into <a href="http://fallabs.com/tokyocabinet/" title="tc" target="_blank">tokyocabinet</a>. So you can get your data form tc and sync them to any other servers, such as redis, mc, sphinx and so on. As an option, <a href="https://code.google.com/p/httpsqs/" title="httsqs" target="_blank">httpsqs</a> is recommended. Mysync is just like an IO thread for the replication.
+Mysync is the role of a slaveDB. It recive the binlog from the master, and save them with json into <a href="http://fallabs.com/tokyocabinet/" title="tc" target="_blank">tokyocabinet</a>. So you can get your data form tc and sync them to any other servers, such as redis, mc, sphinx and so on. As an option, <a href="https://code.google.com/p/httpsqs/" title="httsqs" target="_blank">httpsqs</a> is recommended. So that, PHP, PTYHON, C or any language which supports http protocol is OK.
 
 Run Mysync
 ==========
