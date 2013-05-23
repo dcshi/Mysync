@@ -4,19 +4,19 @@ Mysync is still in development. It may be treated as a toy now.
 
 Description
 ===========
-Mysync is the role of a slaveDB. It recive the binlog from the master, and save them with json into <a href="http://fallabs.com/tokyocabinet/" title="tc">tokyocabinet</a>. So you can get your data form tc and sync them to any other servers, such as redis, mc, sphinx and so on. As an option, <a href="https://code.google.com/p/httpsqs/" title="httsqs">httpsqs</a> is recommended. Mysync is just like an IO thread for the replication.
+Mysync is the role of a slaveDB. It recive the binlog from the master, and save them with json into <a href="http://fallabs.com/tokyocabinet/" title="tc" target="_blank">tokyocabinet</a>. So you can get your data form tc and sync them to any other servers, such as redis, mc, sphinx and so on. As an option, <a href="https://code.google.com/p/httpsqs/" title="httsqs" target="_blank">httpsqs</a> is recommended. Mysync is just like an IO thread for the replication.
 
 Run Mysync
 ==========
-1)the master-mysql should be configured correctly.(binlog_do_db,binlog_format etc.)
-2)In the example file. example.sql and test.sql is provided. With the example.sql, a test table would be created easily, it also include all column types which are supported so far. test.sql include a InsertSQL
-3)run command like: ./mysync -c etc/ms.cf
-4)insert a record into the test-table.
+1)the master-mysql should be configured correctly.(binlog_do_db,binlog_format etc.) <br/>
+2)In the example file. example.sql and test.sql is provided. With the example.sql, a test table would be created easily, it also include all column types which are supported so far. test.sql include a InsertSQL<br/>
+3)run command like: ./mysync -c etc/ms.cf<br/>
+4)insert a record into the test-table.<br/>
 5)if some information is showed on your screen, that is ok.
 
 Dependencies
 ============
-1) <a href="http://fallabs.com/tokyocabinet/" title="tc">tokyocabinet</a> is needed. Its installation is simple.(./configure;make;make install)
+1) <a href="http://fallabs.com/tokyocabinet/" target="_blank" title="tc">tokyocabinet</a> is needed. Its installation is simple.(./configure;make;make install) <br/>
 2) libmysqlclient-dev is needed.
 
 Installation
