@@ -1,0 +1,39 @@
+#slave id
+slave_id 2
+
+#memory pool size (kb)
+pool_size 10240
+
+#bucket size of the table_info(ti) hash
+ti_bucket_size 256
+
+#max bucket  height of the table_info(ti) hash
+#it should not less than the "watch database.table" size
+ti_bucket_height 512
+
+#ratio of the table_id to table_info(ti) map
+ti_map_ratio 13
+
+# pid                                                                                                                                            
+pid /tmp/mysync.pid
+
+# daemon
+daemonize 0
+
+# log path
+#log /tmp/mysync.log
+
+# log debug level 
+#log.level 3
+
+#httpsqs db path
+qs_db	/tmp/httpsqs.db
+
+#master info
+master_host		127.0.0.1
+master_port  	3306
+master_user 	root
+master_password mysql
+
+#watch database.table
+watch db_mysync.t_mysync
