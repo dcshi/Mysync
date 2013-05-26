@@ -1,5 +1,6 @@
 Mysync
 ======
+Mysync is still in development, but you can go on secondary development with it.
 
 Description
 ===========
@@ -11,7 +12,7 @@ Run Mysync
 2)In the example file. example.sql and test.sql is provided. With the example.sql, a test table would be created easily, it also include all column types which are supported so far. test.sql include a InsertSQL<br/>
 3)run command like: ./mysync -c etc/ms.cf<br/>
 4)insert a record into the test-table.<br/>
-5)if some information is showed on your screen, that is ok.
+5)if some information is showed on your screen, that is ok. Or you can view your data through the db_tool.
 
 Dependencies
 ============
@@ -25,6 +26,7 @@ make db_tool;
 
 TODO
 ====
+A simple interface for data accessed which base http protocol or memcache protocol etc. Since httpsqs is not prefect in some case i think.
 
 Author
 ======
