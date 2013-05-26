@@ -15,7 +15,7 @@ Run Mysync
 
 Dependencies
 ============
-1) <a href="http://fallabs.com/tokyocabinet/" target="_blank" title="tc">tokyocabinet</a> is needed. Its installation is simple.(./configure;make;make install) <br/>
+1) <a href="http://fallabs.com/tokyocabinet/" target="_blank" title="tc">tokyocabinet</a> is needed. Its installation is simple.(./configure [--enable-off64];make;make install) <br/>
 2) libmysqlclient-dev is needed.
 
 Installation
