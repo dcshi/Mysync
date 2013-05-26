@@ -126,10 +126,7 @@ int qs_db_init(mysync_info_t *mi)
 	tcbdbsetxmsiz(tdb, 1024*1024*5); // 内存缓存大小
 	*/
 
-	/*
-	 * tdb should be created by httpsqs first
-	 */
-	if(!tcbdbopen(tdb, mi->qs_db, BDBOWRITER | BDBOCREAT)){
+	if(!tcbdbopen(tdb, mi->qs_db, BDBOWRITER|BDBOCREAT|BDBONOLCK)){
 		err = tcbdbecode(tdb);
 		ms_error("open tdb failed: %s", tcbdberrmsg(err));
 		return -1;

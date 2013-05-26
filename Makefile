@@ -21,23 +21,27 @@ CC				= gcc
 RANLIB          = ranlib
 AR              = ar
 
-SRCS = $(wildcard *.c core/*.c )
+SRCS = $(wildcard *.c core/*.c)
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 
 TARGET = mysync
 all:$(TARGET)
 
 $(TARGET):$(OBJS)
-		@echo "Linking $(TARGET) ... "
-		@$(CC) $(C_FLAGS)  $(INC) -o $@ $^ $(LIB) 
+	@echo "Linking $(TARGET) ... "
+	@$(CC) $(C_FLAGS)  $(INC) -o $@ $^ $(LIB) 
 
 %.o:%.c
-	 	@echo "Compiling $<  ... "
-		@$(CC) $(C_FLAGS)  $(INC) -c -o $@ $<  
-	
+	@echo "Compiling $<  ... "
+	@$(CC) $(C_FLAGS)  $(INC) -c -o $@ $<  
+
+db_tool:example/db_tool.c
+	@echo "Compiling $<  ... "
+	@$(CC) $(C_FLAGS)  $(INC) -o $@ $<  $(LIB)
+
 clean:
-	@rm -f *.o ./core/*.o
-	@rm -f ./$(TARGET)
+	@rm -f *.o ./core/*.o ./example/*.o
+	@rm -f ./$(TARGET) ./db_tool
 
 install:
 	install mysync ./bin/

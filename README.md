@@ -21,13 +21,14 @@ Dependencies
 Installation
 ============
 make;make install;
+make db_tool;
 
 TODO
 ====
 
 Author
 ======
-dcshi(...) <dcshi@qq.com>
+dcshi(施俊伟) <dcshi@qq.com>
 
 Copyright and License
 =====================
